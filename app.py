@@ -1340,6 +1340,8 @@ from fastapi import FastAPI, Request, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
+from fastapi import Query
+
 from typing import Optional, Dict, Any
 import requests
 import datetime
@@ -2528,15 +2530,40 @@ scheduler.add_job(scrape_all, 'interval', hours=1)
 scheduler.start()
 
 # Vehicle Fetching using DB (scraped data)
-async def fetch_vehicles(path: str, criteria: Dict) -> list:
-    if path != "preowned":
-        return []  # For "new", no data from sources
+# async def fetch_vehicles(path: str, criteria: Dict) -> list:
+#     if path != "preowned":
+#         return []  # For "new", no data from sources
     
+#     query = {}
+#     if "min_price" in criteria:
+#         query["price_range.low"] = {"$gte": criteria["min_price"]}
+#     if "max_price" in criteria:
+#         query["price_range.high"] = {"$lte": criteria["max_price"]}
+#     if "interest" in criteria:
+#         interest = criteria["interest"]
+#         query["$or"] = [
+#             {"make": {"$regex": interest, "$options": "i"}},
+#             {"model": {"$regex": interest, "$options": "i"}},
+#             {"title": {"$regex": interest, "$options": "i"}},
+#             {"description": {"$regex": interest, "$options": "i"}}
+#         ]
+    
+#     vehicles = await lots_collection.find(query).limit(8).to_list(8)
+#     return [dict(v, _id=str(v["_id"])) for v in vehicles]
+
+
+async def fetch_vehicles(path: str, criteria: Dict, page: int, page_size: int):
+    if path != "preowned":
+        return [], 0
+
     query = {}
+
     if "min_price" in criteria:
         query["price_range.low"] = {"$gte": criteria["min_price"]}
+
     if "max_price" in criteria:
         query["price_range.high"] = {"$lte": criteria["max_price"]}
+
     if "interest" in criteria:
         interest = criteria["interest"]
         query["$or"] = [
@@ -2545,10 +2572,22 @@ async def fetch_vehicles(path: str, criteria: Dict) -> list:
             {"title": {"$regex": interest, "$options": "i"}},
             {"description": {"$regex": interest, "$options": "i"}}
         ]
-    
-    vehicles = await lots_collection.find(query).limit(8).to_list(8)
-    return [dict(v, _id=str(v["_id"])) for v in vehicles]
 
+    # Pagination logic
+    skip = (page - 1) * page_size
+
+    total = await lots_collection.count_documents(query)
+
+    cursor = (
+        lots_collection
+        .find(query)
+        .skip(skip)
+        .limit(page_size)
+    )
+
+    vehicles = await cursor.to_list(length=page_size)
+
+    return [dict(v, _id=str(v["_id"])) for v in vehicles], total
 # xAI API Integration for Conversational AI
 async def generate_ai_response(state: ConversationState, user_message: str) -> str:
     system_prompt = f"""
@@ -2627,18 +2666,44 @@ async def web_chat(message: Message):
 def get_lvr(input: LVRInput):
     return calculate_lvr(input.vehicle_value, input.loan_amount)
 
+# @app.get("/vehicles")
+# async def get_vehicles(path: str, budget_min: Optional[float] = None, budget_max: Optional[float] = None, interest: Optional[str] = None):
+#     criteria = {}
+#     if budget_min:
+#         criteria["min_price"] = budget_min
+#     if budget_max:
+#         criteria["max_price"] = budget_max
+#     if interest:
+#         criteria["interest"] = interest
+#     vehicles = await fetch_vehicles(path, criteria)
+#     return {"vehicles": vehicles}
 @app.get("/vehicles")
-async def get_vehicles(path: str, budget_min: Optional[float] = None, budget_max: Optional[float] = None, interest: Optional[str] = None):
+async def get_vehicles(
+    path: str,
+    budget_min: Optional[float] = None,
+    budget_max: Optional[float] = None,
+    interest: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(8, ge=1, le=50)
+):
     criteria = {}
-    if budget_min:
+
+    if budget_min is not None:
         criteria["min_price"] = budget_min
-    if budget_max:
+    if budget_max is not None:
         criteria["max_price"] = budget_max
     if interest:
         criteria["interest"] = interest
-    vehicles = await fetch_vehicles(path, criteria)
-    return {"vehicles": vehicles}
 
+    vehicles, total = await fetch_vehicles(path, criteria, page, page_size)
+
+    return {
+        "page": page,
+        "page_size": page_size,
+        "total_results": total,
+        "total_pages": (total + page_size - 1) // page_size,
+        "vehicles": vehicles
+    }
 @app.post("/upload/{phone}")
 async def upload_document(phone: str, file: UploadFile = File(...)):
     if not await conversations.find_one({"phone": phone}):
