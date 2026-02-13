@@ -32,7 +32,7 @@
 # # Environment Variables
 # XAI_API_KEY = os.getenv("XAI_API_KEY")
 # REDBOOK_API_KEY = os.getenv("REDBOOK_API_KEY")  # Kept but not used
-# MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://salman:4lanHyMRdCrtXDJ7@sign365.nglnioh.mongodb.net/bestnextcars")
+# MONGO_URI = os.getenv("MONGO_URI")
 
 # # FastAPI App
 # app = FastAPI(title="Best Next Car Backend - Chatbot Focus")
