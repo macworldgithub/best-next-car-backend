@@ -1365,7 +1365,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from math import ceil
 from urllib.parse import urljoin
 import pymongo
-
+from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
 
 # Environment Variables
@@ -1375,7 +1375,13 @@ MONGO_URI = os.getenv("MONGO_URI")
 
 # FastAPI App
 app = FastAPI(title="Best Next Car Backend - Chatbot Focus")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Custom OpenAPI schema (optional, for customization)
 def custom_openapi():
     if app.openapi_schema:
