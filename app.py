@@ -4030,27 +4030,6 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(scrape_all, 'interval', hours=1)
 scheduler.start()
 
-# Vehicle Fetching using DB (scraped data)
-# async def fetch_vehicles(path: str, criteria: Dict) -> list:
-#     if path != "preowned":
-#         return []  # For "new", no data from sources
-    
-#     query = {}
-#     if "min_price" in criteria:
-#         query["price_range.low"] = {"$gte": criteria["min_price"]}
-#     if "max_price" in criteria:
-#         query["price_range.high"] = {"$lte": criteria["max_price"]}
-#     if "interest" in criteria:
-#         interest = criteria["interest"]
-#         query["$or"] = [
-#             {"make": {"$regex": interest, "$options": "i"}},
-#             {"model": {"$regex": interest, "$options": "i"}},
-#             {"title": {"$regex": interest, "$options": "i"}},
-#             {"description": {"$regex": interest, "$options": "i"}}
-#         ]
-    
-#     vehicles = await lots_collection.find(query).limit(8).to_list(8)
-#     return [dict(v, _id=str(v["_id"])) for v in vehicles]
 
 
 async def fetch_vehicles(path: str, criteria: Dict, page: int, page_size: int):
@@ -4168,17 +4147,7 @@ async def web_chat(message: Message):
 def get_lvr(input: LVRInput):
     return calculate_lvr(input.vehicle_value, input.loan_amount)
 
-# @app.get("/vehicles")
-# async def get_vehicles(path: str, budget_min: Optional[float] = None, budget_max: Optional[float] = None, interest: Optional[str] = None):
-#     criteria = {}
-#     if budget_min:
-#         criteria["min_price"] = budget_min
-#     if budget_max:
-#         criteria["max_price"] = budget_max
-#     if interest:
-#         criteria["interest"] = interest
-#     vehicles = await fetch_vehicles(path, criteria)
-#     return {"vehicles": vehicles}
+
 @app.get("/vehicles")
 async def get_vehicles(
     path: str,
