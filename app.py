@@ -4206,6 +4206,16 @@ async def get_vehicles(
         "total_pages": (total + page_size - 1) // page_size,
         "vehicles": vehicles
     }
+
+@app.get("/vehicles/{vehicle_id}")
+async def get_vehicle(vehicle_id: str):
+    try:
+        vehicle = await lots_collection.find_one({"_id": ObjectId(vehicle_id)})
+        if not vehicle:
+            raise HTTPException(status_code=404, detail="Vehicle not found")
+        return dict(vehicle, _id=str(vehicle["_id"]))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid vehicle ID")
 @app.post("/upload/{phone}")
 async def upload_document(phone: str, file: UploadFile = File(...)):
     if not await conversations.find_one({"phone": phone}):
