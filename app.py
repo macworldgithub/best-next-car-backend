@@ -4508,8 +4508,8 @@ def scrape_tradinggarage(base_url="https://www.tradinggarage.com"):
                     'reserve': reserve,
                     'scrape_time': datetime.now(timezone.utc)
                 }
-                if is_classic(lot):
-                    listings.append(lot)
+                # if is_classic(lot):
+                listings.append(lot)
         except Exception as e:
             pass
     return listings
@@ -4608,8 +4608,8 @@ def scrape_collectingcars():
                     'fuel_type': fuel_type,
                     'scrape_time': datetime.now(timezone.utc)
                 }
-                if is_classic(lot):
-                    listings.append(lot)
+                # if is_classic(lot):
+                listings.append(lot)
             page += 1
             time.sleep(1.2)
         except Exception as e:
@@ -4712,8 +4712,8 @@ def scrape_chicane(url='https://www.chicaneauctions.com.au/february-2026-classic
                 'status': 'upcoming',
                 'scrape_time': datetime.now(timezone.utc).isoformat(),
             }
-            if is_classic(lot):
-                listings.append(lot)
+            # if is_classic(lot):
+            listings.append(lot)
         except Exception as e:
             print(f"Error parsing one Chicane promo_box: {e}")
             continue
@@ -4819,8 +4819,8 @@ def scrape_lloydsonline(url='https://www.lloydsonline.com.au/AuctionLots.aspx?st
                 'status': 'live' if seconds_rem > 0 else 'ended',
                 'scrape_time': datetime.now(timezone.utc),
             }
-            if is_classic(lot):
-                listings.append(lot)
+            # if is_classic(lot):
+            listings.append(lot)
         except Exception as e:
             print(f"Error parsing Lloyds lot: {str(e)}")
     return listings
@@ -4965,8 +4965,8 @@ def scrape_carbids_api():
                     "status": "live", # we only get live auctions here
                     "scrape_time": datetime.now(timezone.utc),
                 }
-                if is_classic(lot):
-                    listings.append(lot)
+                # if is_classic(lot):
+                listings.append(lot)
             page += 1
             time.sleep(1.3) # polite delay
         except Exception as e:
@@ -5060,8 +5060,8 @@ def scrape_bennetts(base_url="https://www.bennettsclassicauctions.com.au"):
                                     'transmission': extract_transmission(options),
                                     'scrape_time': datetime.now(timezone.utc)
                                 }
-                                if is_classic(lot):
-                                    all_listings.append(lot)
+                                # if is_classic(lot):
+                                all_listings.append(lot)
         except Exception as e:
             print(f"Error scraping Bennetts ({page_url}): {str(e)}")
     return all_listings
@@ -5237,8 +5237,8 @@ def scrape_seven82motors():
                 'auction_title': auction_title,
                 'raw_filters': item.get("filters", {}),
             }
-            if is_classic(lot):
-                listings.append(lot)
+            # if is_classic(lot):
+            listings.append(lot)
     except Exception as e:
         print(f"[seven82motors] Error scraping {auction_slug}: {e}")
     return listings
