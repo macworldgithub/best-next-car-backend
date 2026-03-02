@@ -6386,7 +6386,8 @@ def scrape_carbids_api():
                     "status": "live", # we only get live auctions here
                     "scrape_time": datetime.now(timezone.utc),
                 }
-                listings.append(lot)
+                if is_classic(lot):
+                    listings.append(lot)
             page += 1
             time.sleep(1.3) # polite delay
         except Exception as e:
